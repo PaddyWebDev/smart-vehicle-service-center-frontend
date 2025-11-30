@@ -30,31 +30,21 @@ import {
 
 } from "lucide-react";
 import { signOutUser } from "@/hooks/user";
+import { iconsMap, linksType } from "@/types/common";
 
 interface SidebarProps {
   userId: string;
   userName: string;
+  routeName: string
+  linkList: linksType[]
 }
 
-type linksType = {
-  label: string;
-  href: string;
-  icon: LucideIcon;
-};
 
-export default function Sidebar({ userId, userName }: SidebarProps) {
+
+export default function Sidebar({ userId, userName, routeName, linkList }: SidebarProps) {
 
   const pathname = usePathname();
 
-  const links: linksType[] = [
-    { href: "/auth/dashboard", label: "Dashboard", icon: Home },
-    { href: "/auth/investment-chat", label: "ChatBot", icon: MessageCircleMore },
-    { href: "/auth/mutual-funds/recommender/sip-based", label: "Sip Recommendation", icon: Info },
-    { href: "/auth/mutual-funds/recommender/lumpsum-based", label: "LumpSum Recommendation", icon: Wand2 },
-    { href: "/auth/mutual-funds/investment-calculator", label: "Investment Calculator", icon: Calculator },
-    { href: "/auth/credit-risk", label: "Credit Risk", icon: Shield },
-    { href: "/auth/goal-planning", label: "Goal Planning", icon: Goal },
-  ];
 
   return (
     <ShadCNSidebar
@@ -64,29 +54,31 @@ export default function Sidebar({ userId, userName }: SidebarProps) {
     >
       <SidebarHeader className="border-b border-neutral-200 dark:border-neutral-700 px-4 py-3 ">
         <h2 className="text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-          Wealth Wise
+          {routeName}
         </h2>
       </SidebarHeader>
       <SidebarContent className=" overflow-y-auto max-h-full dark:bg-neutral-900 ">
         <SidebarGroup>
           <nav className="flex flex-col space-y-3 bg-neutral-100 dark:bg-neutral-800 px-2 py-2 rounded-xl shadow-md">
-            {links.map((link, id) => (
-              <Link
-                key={id}
-                href={link.href}
-                className={cn(
-                  "px-3 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors",
-                  pathname === link.href
-                    ? "bg-neutral-200 dark:bg-neutral-700 font-semibold text-neutral-900 dark:text-neutral-100"
-                    : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
-                )}
-              >
-                <span>
-                  <link.icon />
-                </span>
-                {link.label}
-              </Link>
-            ))}
+            {linkList.map((link, id) => {
+              return (
+                <Link
+                  key={id}
+                  href={link.href}
+                  className={cn(
+                    "px-3 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors",
+                    pathname === link.href
+                      ? "bg-neutral-200 dark:bg-neutral-700 font-semibold text-neutral-900 dark:text-neutral-100"
+                      : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700"
+                  )}
+                >
+                  <span>
+                    <Home />
+                  </span>
+                  {link.label}
+                </Link>
+              )
+            })}
 
             {pathname === "/auth/profile" ? (
               <>
@@ -168,3 +160,5 @@ export default function Sidebar({ userId, userName }: SidebarProps) {
     </ShadCNSidebar>
   );
 }
+
+
