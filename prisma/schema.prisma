@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String          @id @default(cuid())
+  name           String
+  email          String          @unique
+  phoneNumber    String          @unique
+  password       String
+  role           Role
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  Vehicle        Vehicle[]
+  ServiceBooking Appointment[]
+  Invoice        Invoice[]
+  ServiceCenter  ServiceCenter[]
+}
+
+enum Role {
+  ADMIN
+  CUSTOMER
+  SERVICE_CENTER
+}
+
+model ServiceCenter {
+  id             String        @id @default(cuid())
+  userId         String
+  serviceCenter  User          @relation(fields: [userId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  ServiceBooking Appointment[]
+  Inventory      Inventory?
+  Invoice        Invoice[]
+}
+
+enum Vtype {
+  CAR
+  TRUCK
+  BIKE
+}
+
+model Vehicle {
+  id           String        @id @default(cuid())
+  vehicleName  String
+  vehicleMake  String
+  vehicleModel Int
+  vehicleType  Vtype
+  userId       String
+  owner        User          @relation(fields: [userId], references: [id])
+  service      Appointment[]
+  createdAt    DateTime      @default(now())
+}
+
+enum bookingStatus {
+  PENDING
+  APPROVED
+  InService
+  COMPLETED
+}
+
+model Appointment {
+  id                    String        @id @default(cuid())
+  vehicleId             String
+  Vehicle               Vehicle       @relation(fields: [vehicleId], references: [id])
+  userId                String
+  owner                 User          @relation(fields: [userId], references: [id])
+  serviceType           String
+  requestedDate         DateTime      @default(now())
+  approvedDate          DateTime?
+  service_complete_date DateTime?
+  status                bookingStatus
+  serviceCenterId       String
+  serviceCenter         ServiceCenter @relation(fields: [serviceCenterId], references: [id])
+  JobCards              JobCards[]
+
+  @@index([vehicleId, userId, serviceCenterId])
+}
+
+enum JobStatus {
+  COMPLETED
+  PENDING
+}
+
+model JobCards {
+  id             String         @id @default(cuid())
+  appointmentId  String
+  appointment    Appointment    @relation(fields: [appointmentId], references: [id])
+  jobName        String
+  jobDescription String
+  status         JobStatus
+  price          Int
+  JobCardParts   JobCardParts[]
+
+  @@index([appointmentId])
+}
+
+model JobCardParts {
+  id        String    @id @default(uuid())
+  jobCardId String
+  jobCard   JobCards  @relation(fields: [jobCardId], references: [id])
+  partId    String
+  partUsed  Inventory @relation(fields: [partId], references: [id])
+  quantity  Int
+}
+
+model Inventory {
+  id           String  @id @default(uuid())
+  name         String
+  sku          String  @unique
+  brand        String?
+  category     String? // e.g., Engine Parts, Consumables, Electrical
+  unitPrice    Decimal @db.Decimal(10, 2)
+  minimumStock Int     @default(0)
+
+  createdAt       DateTime       @default(now())
+  JobCardParts    JobCardParts[]
+  serviceCenterId String         @unique
+  serviceCenter   ServiceCenter  @relation(fields: [serviceCenterId], references: [id])
+
+  @@index([serviceCenterId])
+}
+
+model Invoice {
+  id              String        @id @default(cuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  totalAmount     Int
+  serviceCenterId String
+  serviceCenter   ServiceCenter @relation(fields: [serviceCenterId], references: [id])
+  billingDate     DateTime      @default(now())
+}
